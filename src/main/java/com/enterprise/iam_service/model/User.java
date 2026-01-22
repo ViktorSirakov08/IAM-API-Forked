@@ -9,47 +9,60 @@ import java.util.HashSet;
 import java.util.UUID;
 import java.util.Set;
 
+// ? @Entity: Defines this class as a JPA entity mapped to the database.
+// ? @Table(name = "users"): Specifies the table name in the RDBMS.
+// ? @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder: Lombok annotations for boilerplate-free code.
 @Entity
-@Table(name = "users") // Good practice to use plural table names
+@Table(name = "users")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor
-@Builder // pattern for easy object creation
+@Builder
 public class User {
+
+    // * ID: Uses UUID instead of Long for better security and scalability in distributed systems.
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    // ! SECURITY: unique=true prevents duplicate accounts with the same email.
     @Column(unique = true, nullable = false)
     private String email;
 
+    // ! SECURITY: Stores the salted BCrypt hash, never the plaintext password.
     @Column(nullable = false)
     private String passwordHash;
 
-    // We use a String for simplicity now, but this maps to your "ACTIVE/LOCKED" requirement
+    // * Status: Controls account lifecycle (e.g., ACTIVE, PENDING, LOCKED).
     @Builder.Default
     private String status = "PENDING"; 
 
     @Builder.Default
     private Boolean emailVerified = false;
 
-    // ADD THESE MISSING FIELDS:
+    // ! SECURITY: Tracks failed attempts to trigger the Account Lockout logic.
     @Builder.Default
     private Integer failedLoginAttempts = 0;
 
+    // * Audit: Records the most recent successful authentication event.
     private LocalDateTime lastLoginAt;
 
+    // * Audit: Automatically captures the record creation timestamp via Hibernate.
     @CreationTimestamp
     private LocalDateTime createdAt;
 
+    // * Audit: Automatically updates whenever the entity state is modified.
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    @ManyToMany(fetch = FetchType.EAGER) // EAGER ensures roles are loaded with the user
+    // ? @ManyToMany: Defines the relationship between users and roles.
+    // ? fetch = FetchType.EAGER: Ensures roles are loaded immediately with the user for security checks.
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "user_roles",
         joinColumns = @JoinColumn(name = "user_id"),
         inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    @Builder.Default // This ensures the HashSet is initialized when using the Builder
+    @Builder.Default
     private Set<Role> roles = new HashSet<>();
+    
 }

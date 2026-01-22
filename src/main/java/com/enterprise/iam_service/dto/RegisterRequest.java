@@ -4,7 +4,6 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-// Java 16+ Records are perfect for DTOs (Data Transfer Objects)
 public record RegisterRequest(
     @Email(message = "Invalid email format")
     @NotBlank(message = "Email is required")

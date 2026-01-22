@@ -14,8 +14,10 @@ import java.time.LocalDateTime;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+// ? @Service: Marks this as a service-layer bean where business logic and transaction management reside.
+// ? @RequiredArgsConstructor: Injects all 'final' fields (repositories/security utils) via the constructor.
 @Service
-@RequiredArgsConstructor // Automatically creates constructor for dependencies
+@RequiredArgsConstructor 
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -23,54 +25,62 @@ public class AuthService {
     private final JwtUtils jwtUtils;
     private final SecurityService securityService;
 
+    // * Business Logic: Handles the end-to-end registration flow for new users.
     public AuthResponse register(RegisterRequest request) {
-        // 1. Check if user exists
+        // * Step 1: Pre-persistence check to ensure the email is unique.
         if (userRepository.existsByEmail(request.email())) {
             throw new RuntimeException("Email already in use");
         }
+        
+        // ! SECURITY: Enforces the organization's password complexity rules before proceeding.
         validatePasswordStrength(request.password());
-        // 2. Create User object using Builder pattern
+        
+        // * Step 2: Assemble the User object. 
+        // ! SECURITY: The password is encrypted using BCrypt immediately via passwordEncoder.encode().
         var user = User.builder()
                 .email(request.email())
-                .passwordHash(passwordEncoder.encode(request.password())) // Hash immediately
-                .status("ACTIVE") // Default to ACTIVE for the MVP
+                .passwordHash(passwordEncoder.encode(request.password())) 
+                .status("ACTIVE") 
                 .build();
 
-        // 3. Save to DB
+        // * Step 3: Persistence and Token Issuance.
         userRepository.save(user);
         String token = jwtUtils.generateToken(user.getEmail());
 
         return new AuthResponse(token);
     }
 
+    // * Business Logic: Handles credential verification and session initiation.
     public AuthResponse authenticate(LoginRequest request) {
+        // * Step 1: Look up the identity in the database.
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new RuntimeException("Invalid credentials"));
 
-        // 1. Check if account is locked
+        // ! SECURITY: Brute-Force Check. Block authentication if the account status is 'LOCKED'.
         if ("LOCKED".equals(user.getStatus())) {
             throw new RuntimeException("Account is locked due to multiple failed attempts.");
         }
 
-        // 2. Check password
+        // ! SECURITY: Compare the raw password from the request with the salted hash in the database.
         if (passwordEncoder.matches(request.password(), user.getPasswordHash())) {
-            // SUCCESS: Reset attempts and return token
+            // * SUCCESS: Clean up state and update audit metadata.
             user.setFailedLoginAttempts(0);
             user.setLastLoginAt(LocalDateTime.now());
             userRepository.save(user);
             
+            // * Issue the session token.
             String token = jwtUtils.generateToken(user.getEmail());
             return new AuthResponse(token);
         } else {
-            // FAILURE: Increment attempts
+            // ! FAILURE: Trigger the security increment logic to eventually lock the account.
             securityService.handleFailedLogin(user);
             throw new RuntimeException("Invalid credentials");
         }
     }
 
+    // ! SECURITY: Regex-based validation for identity assurance.
     public void validatePasswordStrength(String password) {
-    // Logic: At least 8 characters, 1 uppercase, 1 lowercase, and 1 number.
-    // No special symbols required.
+    // ? Regex breakdown: 8+ characters, contains digits, lowercase, and uppercase letters.
     String regex = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{8,}$";
     
     if (password == null || !password.matches(regex)) {
