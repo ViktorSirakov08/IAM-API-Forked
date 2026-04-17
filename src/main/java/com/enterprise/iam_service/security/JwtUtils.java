@@ -1,12 +1,14 @@
 package com.enterprise.iam_service.security;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
-import org.springframework.stereotype.Component;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
 
 import javax.crypto.SecretKey;
-import java.util.Date;
-import java.nio.charset.StandardCharsets;
+
+import org.springframework.stereotype.Component;
+
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 
 // ? @Component: Allows Spring to manage this class as a bean, making it injectable into Services and Filters.
 @Component
@@ -14,7 +16,7 @@ public class JwtUtils {
     
     // ! SECURITY ALERT: The secret key must be at least 256-bits (32 characters) for HS256 algorithm.
     // ! TODO: In a production environment, pull this value from an environment variable or HashiCorp Vault.
-    private final String jwtSecret = "your-very-secure-and-very-long-secret-key-here-12345";
+    private final String jwtSecret = "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";
     
     // * Cryptography: Generates a secure HMAC-SHA signing key from the secret string.
     private final SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
