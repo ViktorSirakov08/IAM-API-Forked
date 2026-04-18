@@ -1,13 +1,19 @@
 package com.enterprise.iam_service.controller;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.enterprise.iam_service.dto.AuthResponse;
+import com.enterprise.iam_service.dto.LoginRequest;
 import com.enterprise.iam_service.dto.RegisterRequest;
 import com.enterprise.iam_service.service.AuthService;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import com.enterprise.iam_service.dto.LoginRequest;
-import com.enterprise.iam_service.dto.AuthResponse;
 
 // ? @RestController indicates that the data returned by each method will be written straight into the response body instead of rendering a template.
 // ? @RequestMapping("/api/auth") defines the base URI for all authentication-related requests.
@@ -15,6 +21,7 @@ import com.enterprise.iam_service.dto.AuthResponse;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:3001")
 public class AuthController {
 
     private final AuthService authService;
