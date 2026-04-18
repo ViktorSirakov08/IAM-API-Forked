@@ -1,14 +1,17 @@
 package com.enterprise.iam_service.config;
 
+import java.util.Set;
+
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+
 import com.enterprise.iam_service.model.Role;
 import com.enterprise.iam_service.model.User;
 import com.enterprise.iam_service.repository.RoleRepository;
 import com.enterprise.iam_service.repository.UserRepository;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
-import java.util.Set;
 
 // ? @Component ensures this class is picked up by Spring's component scanning.
 // ? CommandLineRunner is an interface used to run a specific block of code once the application context has loaded.
@@ -49,5 +52,11 @@ public class DataInitializer implements CommandLineRunner {
             }
         }
         
+        if (roleRepository.findByName("USER").isEmpty()) {
+            Role userRole = new Role();
+            userRole.setName("USER");
+            roleRepository.save(userRole);
+            System.out.println("Default USER role initialized.");
+        }
     }
 }
