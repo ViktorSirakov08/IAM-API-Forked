@@ -1,7 +1,7 @@
 package com.enterprise.iam_service;
 
-import com.enterprise.iam_service.security.JwtAuthenticationFilter;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,7 +18,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
+import com.enterprise.iam_service.security.JwtAuthenticationFilter;
+
+import lombok.RequiredArgsConstructor;
 // ? @Configuration: Marks this class as a source of bean definitions for the application context.
 // ? @EnableWebSecurity: Switches on Spring Security's web security support.
 // ? @EnableMethodSecurity: Enables the use of @PreAuthorize annotations in your controllers.
@@ -63,7 +65,8 @@ public class SecurityConfig {
             "http://localhost:8085",   // Some service of your choice
             "http://localhost:3000",   // If you run frontend standalone
             "http://localhost:5500",   // VS Code Live Server
-            "http://127.0.0.1:5500"
+            "http://127.0.0.1:5500",
+            "http://localhost:3001"    // Ecolator App
         ));
 
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
